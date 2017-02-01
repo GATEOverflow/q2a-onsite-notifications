@@ -208,7 +208,7 @@ class q2apro_history_check {
 					$userid_CommThr = $comment['userid']; // unique
 
 					// dont inform user that comments, and dont inform user that comments on his own question/answer
-					if($userid_CommThr != $uid && $userid_CommThr != $pid) {
+					if(($userid_CommThr != $uid) && ($uid != $pid)) {
 						$ohandle = $this->getHandleFromId($userid_CommThr);
 
 						$paramstring='';

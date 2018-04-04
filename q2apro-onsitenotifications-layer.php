@@ -37,12 +37,13 @@
 				//$url = preg_replace("/^http:/i", "https:", $url);
 				if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
     // SSL connection
-					$url = preg_replace("/^http:/i", "https:", $url);
+				//	$url = preg_replace("/^http:/i", "https:", $url);
 				}
+				$url = preg_replace("/^http:/i", "", $url);
 				$this->output('<script type="text/javascript">
 						var eventnotifyAjaxURL = \''.$url.'eventnotify\';
 					</script>');  
-				$this->output('<script type="text/javascript" src="'. $url . $this->plugin_url_onsitenotifications .'script.min.js"></script>');
+				$this->output('<script async type="text/javascript" src="'. $url . $this->plugin_url_onsitenotifications .'script.min.js"></script>');
 //				$url = tohttps(qa_opt('site_url'));
 				$this->output('<link rel="stylesheet" type="text/css" href="'. $url . $this->plugin_url_onsitenotifications .'styles.css">');
 			}

@@ -59,10 +59,10 @@ class q2apro_onsitenotifications_page {
 		$url = qa_opt('site_url');
 		if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 			// SSL connection
-			$url = preg_replace("/^http:/i", "https:", $url);
+		//	$url = preg_replace("/^http:/i", "https:", $url);
 		}
 
-		//			$url = preg_replace("/^http:/i", "https:", $url);
+		$url = preg_replace("/^http:/i", "", $url);
 		if( $transferString !== null ) {
 
 			// prevent empty userid

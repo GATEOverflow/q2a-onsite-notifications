@@ -112,6 +112,26 @@ class q2apro_history_check {
 		// comments and answers
 		if(in_array($event,$special)) {
 			// userid (recent C)
+
+			if($event == 'qas_blog_c_post')
+			{
+					$uid = qa_db_read_one_value(
+							qa_db_query_sub(
+								'SELECT userid FROM ^blogs WHERE postid=#',
+								$params['postid']
+								),
+							true
+							);
+					// userid (QA)
+					$pid = qa_db_read_one_value(
+							qa_db_query_sub(
+								'SELECT userid FROM ^blogs WHERE postid=#',
+								$params['parentid']
+								),
+							true
+							);
+			}
+			else{
 			$uid = qa_db_read_one_value(
 					qa_db_query_sub(
 						'SELECT userid FROM ^posts WHERE postid=#',
@@ -127,6 +147,7 @@ class q2apro_history_check {
 						),
 					true
 					);
+			}
 			// if QA poster is not the same as commenter
 			if($pid != $userid) {
 
@@ -179,21 +200,6 @@ class q2apro_history_check {
 				else{
 					$oevent = 'in_blog_c_comment';
 
-					$uid = qa_db_read_one_value(
-							qa_db_query_sub(
-								'SELECT userid FROM ^blogs WHERE postid=#',
-								$params['postid']
-								),
-							true
-							);
-					// userid (QA)
-					$pid = qa_db_read_one_value(
-							qa_db_query_sub(
-								'SELECT userid FROM ^blogs WHERE postid=#',
-								$params['parentid']
-								),
-							true
-							);
 					// check if we have more comments to the parent
 					// DISTINCT: if a user has more than 1 comment just select him unique to inform him only once
 					$precCommentsQuery = qa_db_query_sub('SELECT DISTINCT userid FROM `^blogs`
@@ -208,7 +214,7 @@ class q2apro_history_check {
 					$userid_CommThr = $comment['userid']; // unique
 
 					// dont inform user that comments, and dont inform user that comments on his own question/answer
-					if(($userid_CommThr != $uid) && ($uid != $pid)) {
+					if(($userid_CommThr != $uid) && ($userid_CommThr != $pid)) {
 						$ohandle = $this->getHandleFromId($userid_CommThr);
 
 						$paramstring='';

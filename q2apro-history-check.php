@@ -10,6 +10,15 @@ class q2apro_history_check {
 	function process_event($event, $userid, $handle, $cookieid, $params) {
 
 		if(!qa_opt('event_logger_to_database')) return;
+		if ($event === 'q2apro_osn_plugin') {
+			qa_db_query_sub(
+					'INSERT INTO ^q2apro_osn_plugin_notifications(plugin_id, event_text, icon_class, user_id, created_at) ' .
+					'VALUES ($, $, $, $, NOW())',
+					$params['plugin_id'], $params['event_text'], $params['icon_class'], $params['user_id']
+				       );
+
+			return;
+		}
 
 		$twoway = array(
 				'a_select',
@@ -44,10 +53,10 @@ class q2apro_history_check {
 				'c_post',
 				'qas_blog_c_post'
 				);
+				//'u_mentioned',
 		$interaction = array(
 				'u_message',
 				'u_wall_post',
-				'u_mentioned',
 				'u_favorite'
 				);
 
@@ -75,12 +84,22 @@ class q2apro_history_check {
 
 				foreach ($params as $key => $value)
 					$paramstring.=(strlen($paramstring) ? "\t" : '').$key.'='.$this->value_to_text($value);
-
+				if($uid == 42416)
+				{
 				qa_db_query_sub(
-						'INSERT INTO ^eventlog (datetime, ipaddress, userid, handle, cookieid, event, params) '.
-						'VALUES (NOW(), $, $, $, #, $, $)',
+						'INSERT INTO qa_eventlog (datetime, ipaddress, userid, handle, cookieid, event, params) '.
+						'VALUES (NOW(), $, #, $, #, $, $)',
 						qa_remote_ip_address(), $uid, $ohandle, $cookieid, $oevent, $paramstring
 					       );
+				}
+				else
+				{
+				qa_db_query_sub(
+						'INSERT INTO ^eventlog (datetime, ipaddress, userid, handle, cookieid, event, params) '.
+						'VALUES (NOW(), $, #, $, #, $, $)',
+						qa_remote_ip_address(), $uid, $ohandle, $cookieid, $oevent, $paramstring
+				);
+				}
 			}
 		}
 		// messages and wallposts
@@ -115,38 +134,38 @@ class q2apro_history_check {
 
 			if($event == 'qas_blog_c_post')
 			{
-					$uid = qa_db_read_one_value(
-							qa_db_query_sub(
-								'SELECT userid FROM ^blogs WHERE postid=#',
-								$params['postid']
-								),
-							true
-							);
-					// userid (QA)
-					$pid = qa_db_read_one_value(
-							qa_db_query_sub(
-								'SELECT userid FROM ^blogs WHERE postid=#',
-								$params['parentid']
-								),
-							true
-							);
+				$uid = qa_db_read_one_value(
+						qa_db_query_sub(
+							'SELECT userid FROM ^blogs WHERE postid=#',
+							$params['postid']
+							),
+						true
+						);
+				// userid (QA)
+				$pid = qa_db_read_one_value(
+						qa_db_query_sub(
+							'SELECT userid FROM ^blogs WHERE postid=#',
+							$params['parentid']
+							),
+						true
+						);
 			}
 			else{
-			$uid = qa_db_read_one_value(
-					qa_db_query_sub(
-						'SELECT userid FROM ^posts WHERE postid=#',
-						$params['postid']
-						),
-					true
-					);
-			// userid (QA)
-			$pid = qa_db_read_one_value(
-					qa_db_query_sub(
-						'SELECT userid FROM ^posts WHERE postid=#',
-						$params['parentid']
-						),
-					true
-					);
+				$uid = qa_db_read_one_value(
+						qa_db_query_sub(
+							'SELECT userid FROM ^posts WHERE postid=#',
+							$params['postid']
+							),
+						true
+						);
+				// userid (QA)
+				$pid = qa_db_read_one_value(
+						qa_db_query_sub(
+							'SELECT userid FROM ^posts WHERE postid=#',
+							$params['parentid']
+							),
+						true
+						);
 			}
 			// if QA poster is not the same as commenter
 			if($pid != $userid) {
@@ -233,19 +252,21 @@ class q2apro_history_check {
 
 		} // end in_array
 	}
+public function value_to_text($value)
+        {
+                require_once QA_INCLUDE_DIR . 'util/string.php';
+
+                if (is_array($value))
+                        $text = 'array(' . count($value) . ')';
+                elseif (qa_strlen($value) > 40)
+                        $text = qa_substr($value, 0, 38) . '...';
+                else
+                        $text = $value;
+
+                return strtr($text, "\t\n\r", '   ');
+        }
 
 
-	// worker functions
-	function value_to_text($value) {
-		if (is_array($value))
-			$text='array('.count($value).')';
-					elseif (strlen($value)>40)
-					$text=substr($value, 0, 38).'...';
-					else
-					$text=$value;
-
-					return strtr($text, "\t\n\r", '   ');
-					}
 
 					function getHandleFromId($userid) {
 					require_once QA_INCLUDE_DIR.'qa-app-users.php';

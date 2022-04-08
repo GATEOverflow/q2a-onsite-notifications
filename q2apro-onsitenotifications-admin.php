@@ -19,7 +19,7 @@
 
 		// initialize db-table 'eventlog' if it does not exist yet
 		function init_queries($tableslc) {
-		
+			$result = array();		
 			$tablename = qa_db_add_table_prefix('eventlog');
 			
 			// check if event logger has been initialized already (check for one of the options and existing table)
@@ -44,7 +44,7 @@
 					require_once QA_INCLUDE_DIR.'qa-app-users.php';
 					require_once QA_INCLUDE_DIR.'qa-db-maxima.php';
 
-					return 'CREATE TABLE IF NOT EXISTS ^eventlog ('.
+					$result[] = 'CREATE TABLE IF NOT EXISTS ^eventlog ('.
 						'datetime DATETIME NOT NULL,'.
 						'ipaddress VARCHAR (15) CHARACTER SET ascii,'.
 						'userid '.qa_get_mysql_user_column_type().','.
@@ -59,6 +59,37 @@
 					') ENGINE=MyISAM DEFAULT CHARSET=utf8';
 				}
 			}
+
+			$tablename2 = qa_db_add_table_prefix('usermeta');
+                        if (!in_array($tablename2, $tableslc)) {
+                                $result[] =
+                                        'CREATE TABLE IF NOT EXISTS ^usermeta (
+                                        meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                                        user_id bigint(20) unsigned NOT NULL,
+                                        meta_key varchar(255) DEFAULT NULL,
+                                        meta_value longtext,
+                                        PRIMARY KEY (meta_id),
+                                        UNIQUE (user_id,meta_key)
+                                        ) ENGINE=MyISAM  DEFAULT CHARSET=utf8'
+                                ;
+                        }
+
+                        // create table qa_usermeta which stores the last visit of each user
+                        $tablename3 = qa_db_add_table_prefix('q2apro_osn_plugin_notifications');
+                        if (!in_array($tablename3, $tableslc)) {
+                                $result[] =
+                                        'CREATE TABLE IF NOT EXISTS ^q2apro_osn_plugin_notifications (' .
+                                        'plugin_id VARCHAR(50) NOT NULL, ' .
+                                        'event_text VARCHAR(2000) NOT NULL, ' .
+                                        'icon_class VARCHAR(50) NOT NULL, ' .
+                                        'user_id ' . qa_get_mysql_user_column_type() . ' NOT NULL, ' .
+                                        'created_at DATETIME NOT NULL, ' .
+                                        'KEY ^q2apro_osn_plugin_notifications_idx1 (user_id, created_at), ' .
+                                        'KEY ^q2apro_osn_plugin_notifications_idx2 (plugin_id, user_id, created_at)' .
+                                        ') ENGINE=MyISAM  DEFAULT CHARSET=utf8'
+                                ;
+                        }
+			return $result;
 			// memo: would be best to check if plugin is installed in qa-plugin/ folder or using plugin_exists()
 			// however this functionality is not available in q2a v1.6.3 
 			
@@ -72,9 +103,13 @@
 				case 'q2apro_onsitenotifications_nill':
 					return 'N'; // days
 				case 'q2apro_onsitenotifications_maxage':
-					return 365; // days
+					return 180; // days
 				case 'q2apro_onsitenotifications_maxevshow':
 					return 100; // max events to show in notify box
+				case 'q2apro_onsitenotifications_newwindow':
+                                        return 1; // true
+				case 'q2apro_osn_refreshinterval':
+                                        return 20; // true
 				default:
 					return null;
 			}
@@ -92,6 +127,10 @@
 				qa_opt('q2apro_onsitenotifications_enabled', (bool)qa_post_text('q2apro_onsitenotifications_enabled')); // empty or 1
 				qa_opt('q2apro_onsitenotifications_nill', qa_post_text('q2apro_onsitenotifications_nill')); // string
 				qa_opt('q2apro_onsitenotifications_maxevshow', (int)qa_post_text('q2apro_onsitenotifications_maxevshow')); // int
+				qa_opt('q2apro_onsitenotifications_maxage', (int)qa_post_text('q2apro_onsitenotifications_maxage')); // int
+				qa_opt('q2apro_osn_refreshinterval', (int)qa_post_text('q2apro_osn_refreshinterval')); // int
+				qa_opt('q2apro_onsitenotifications_newwindow', (bool)qa_post_text('q2apro_onsitenotifications_newwindow')); // int
+
 				$ok = qa_lang('admin/options_saved');
 			}
 			
@@ -119,6 +158,24 @@
 				'tags' => 'name="q2apro_onsitenotifications_maxevshow" style="width:100px;"',
 				'value' => qa_opt('q2apro_onsitenotifications_maxevshow'),
 			);
+			$fields[] = array(
+				'type' => 'input',
+				'label' => qa_lang('q2apro_onsitenotifications_lang/admin_maxage'),
+				'tags' => 'name="q2apro_onsitenotifications_maxage" style="width:100px;"',
+				'value' => qa_opt('q2apro_onsitenotifications_maxage'),
+			);
+			$fields[] = array(
+				'type' => 'input',
+				'label' => qa_lang('q2apro_onsitenotifications_lang/admin_refreshinterval'),
+				'tags' => 'name="q2apro_osn_refreshinterval" style="width:100px;"',
+				'value' => qa_opt('q2apro_osn_refreshinterval'),
+			);
+			 $fields[] = array(
+                                'type' => 'checkbox',
+                                'label' => qa_lang('q2apro_onsitenotifications_lang/admin_newwindow'),
+                                'tags' => 'name="q2apro_onsitenotifications_newwindow"',
+                                'value' => qa_opt('q2apro_onsitenotifications_newwindow'),
+                        );
 
 			return array(           
 				'ok' => ($ok && !isset($error)) ? $ok : null,

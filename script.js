@@ -5,48 +5,91 @@
 	Plugin Version: 1.0
 	Plugin Date: 2014-03-29
 	Plugin Author: q2apro.com
-	Plugin Author URI: http://www.q2apro.com
+	Plugin Author URI: http://www.q2apro.com/
+	Plugin License: GPLv3
 	Plugin Minimum Question2Answer Version: 1.5
-	Plugin Update Check URI: http://www.q2apro.com/pluginupdate?id=61
+	Plugin Update Check URI: https://raw.githubusercontent.com/q2apro/q2apro-on-site-notifications/master/qa-plugin.php
 	
-	Licence: Copyright © q2apro.com - All rights reserved
+	This program is free software. You can redistribute and modify it 
+	under the terms of the GNU General Public License.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	More about this license: http://www.gnu.org/licenses/gpl.html
 
 */
 
 $(document).ready(function(){
 
-	$(document).on("click", "#nfyReadClose", function() {
-		$("#nfyWrap").fadeOut(500, function(){$(this).remove() });
+	$(document).on('click', '#nfyReadClose', function() {
+		$('#nfyWrap').fadeOut(500, function(){$(this).remove() });
 	});
-	$(".notifybub").click(function() {
+	function load_notificationcount(){
+		 var evrequest = 'receiveNotify';
+                        $.ajax({
+                                 type: 'POST',
+                                 url: eventnotifyAjaxURL, // root
+                                 data: {ajax:evrequest,auto:'true'},
+                                 cache: false,
+                                 success: function(data) {
+					values = JSON.parse(data);
+					eclass = values['classSuffix'];
+					$('.osn-new-events-link').attr('data-original-title', values['tooltip']);
+					if(!$('.notifybub').hasClass(eclass))
+					{
+						$('.notifybub').attr('class', 'notifybub '+eclass);
+					}
+					$('.notifybub').html(values['eventcount']);
+                                 }
+});
+	}
+
+	function load_notifications(){
+		 var evrequest = 'receiveNotify';
+                        $.ajax({
+                                 type: 'POST',
+                                 url: eventnotifyAjaxURL, // root
+                                 data: {ajax:evrequest},
+                                 cache: false,
+                                 success: function(data) {
+                                        // remove Event-Box if formerly loaded
+                                        $('#nfyWrap').fadeOut(500, function(){$(this).remove() });
+                                        // insert ajax-loaded html 
+                                        // $('.qa-nav-user').append(data);
+                                        $('.osn-new-events-link').after(data);
+                                        // make yellow notification bubble gray
+                                        $('.ntfy-event-new').addClass('ntfy-read');
+                                 }
+});
+	}
+	$('.osn-new-events-link').click(function() {
 		// user clicked on N bubble again to hide event-box
-		if( $("#nfyWrap").length>0 && $("#nfyWrap").is(":visible") ) {
-			$("#nfyWrap").fadeOut(500, function(){$(this).remove() });
+		if( $('#nfyWrap').length>0 && $('#nfyWrap').is(':visible') ) {
+			$('#nfyWrap').fadeOut(500, function(){$(this).remove() });
 		}
 		else {
-		var evrequest = "receiveNotify";
-			$.ajax({
-				 type: "POST",
-				 url: eventnotifyAjaxURL, // root
-				 data: {ajax:evrequest},
-				 cache: false,
-				 success: function(data) {
-					// remove Event-Box if formerly loaded
-					$("#nfyWrap").fadeOut(500, function(){$(this).remove() });
-					// insert ajax-loaded html 
-					// $(".qa-nav-user").append(data);
-					$(".qa-history-new-event-link").append(data);
-					// make yellow notification bubble gray
-					$(".ntfy-event-new").addClass('ntfy-read');
-				 }
-			});
+			load_notifications();
+			
 		}
 	});
+
+setInterval(function(){
+ 
+ load_notificationcount();;
+ 
+}, eventnotifyrefreshinterval * 1000);
+//}, 10000);
+ 
+
 	
+	// fade out notifybox if visible on stage
 	$(document).click(function(event) { 
 		if($(event.target).parents().index($('#nfyWrap')) == -1) {
-			if($('#nfyWrap').is(":visible")) {
-				$("#nfyWrap").fadeOut(500, function(){$(this).remove() });
+			if($('#nfyWrap').is(':visible')) {
+				$('#nfyWrap').fadeOut(500, function(){$(this).remove() });
 			}
 		}        
 	})

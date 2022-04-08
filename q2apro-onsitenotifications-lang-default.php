@@ -23,7 +23,10 @@
 		'access_forbidden' => 'Access forbidden.',
 		'plugin_page_url' => 'Open page in forum:',
 		'contact' => 'For questions please visit ^1q2apro.com^2',
+		'admin_maxage' => 'Maximum days to which events need to be showed:', // extra
 		'admin_maxeventsshow' => 'Maximum number of events to show in notification box:', // extra
+		'admin_refreshinterval' => 'Time in seconds to auto fetch notification count:', // extra
+		'admin_newwindow' => 'Show in New Window', // extra
 		
 		// plugin
 		'my_notifications' => 'My notifications',

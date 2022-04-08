@@ -34,18 +34,15 @@
 			if(qa_opt('q2apro_onsitenotifications_enabled')) {
 				
 				$url = qa_opt('site_url');
-				//$url = preg_replace("/^http:/i", "https:", $url);
-				if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-    // SSL connection
-				//	$url = preg_replace("/^http:/i", "https:", $url);
-				}
 				$url = preg_replace("/^http:/i", "", $url);
 				$this->output('<script type="text/javascript">
 						var eventnotifyAjaxURL = \''.$url.'eventnotify\';
+						var eventnotifyrefreshinterval = '.qa_opt('q2apro_osn_refreshinterval').';
 					</script>');  
-				$this->output('<script async type="text/javascript" src="'. $url . $this->plugin_url_onsitenotifications .'script.min.js"></script>');
+				$this->output('<script async type="text/javascript" src="'. $url . $this->plugin_url_onsitenotifications .'script.min.js?v=0.0016"></script>');
+		//		$this->output('<script async type="text/javascript" src="'. $url . $this->plugin_url_onsitenotifications .'script.js?v=0.001492"></script>');
 //				$url = tohttps(qa_opt('site_url'));
-				$this->output('<link rel="stylesheet" type="text/css" href="'. $url . $this->plugin_url_onsitenotifications .'styles.css">');
+				$this->output('<link rel="stylesheet" type="text/css" href="'. $url . $this->plugin_url_onsitenotifications .'styles.css?v=0.00214">');
 			}
 		}
 		function doctype() {
@@ -55,16 +52,6 @@
 			 */
 			if(qa_opt('q2apro_onsitenotifications_enabled') && qa_get_logged_in_userid()) {
 
-				qa_db_query_sub(
-					'CREATE TABLE IF NOT EXISTS ^usermeta (
-					meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-					user_id bigint(20) unsigned NOT NULL,
-					meta_key varchar(255) DEFAULT NULL,
-					meta_value longtext,
-					PRIMARY KEY (meta_id),
-					UNIQUE (user_id,meta_key)
-					) ENGINE=MyISAM  DEFAULT CHARSET=utf8'
-				);		
 
 				$last_visit = qa_db_read_one_value(
 					qa_db_query_sub(
@@ -94,20 +81,28 @@
 				// q2apro notification tooltip
 				$tooltip = qa_lang('q2apro_onsitenotifications_lang/show_notifications');
 					$tooltip='';
-				if($eventcount) {
+				if($eventcount > 0) {
 					$tooltip = $eventcount.' '.qa_lang('q2apro_onsitenotifications_lang/x_notifications');
 					// only one event
 					if($eventcount==1) {
 						$tooltip = qa_lang('q2apro_onsitenotifications_lang/one_notification');
 					}
-					$tooltip='';
+					$classSuffix='new';
 					// add notify bubble to user navigation highlighted
-					$this->content['loggedin']['suffix'] = @$this->content['loggedin']['suffix'].' <a class="qa-history-new-event-link" title="'.$tooltip.'"><span class="notifybub ntfy-event-new">'.$eventcount.'</span></a>';
 				}
 				else {
 					// add notify bubble to user navigation
-					$this->content['loggedin']['suffix'] = @$this->content['loggedin']['suffix'].' <a class="qa-history-new-event-link" title="'.$tooltip.'"><span class="notifybub ntfy-event-nill">'.qa_opt('q2apro_onsitenotifications_nill').'</span></a>';
+$tooltip = qa_lang('q2apro_onsitenotifications_lang/show_notifications');
+					$eventcount = qa_opt('q2apro_onsitenotifications_nill');
+					$classSuffix = 'nill';  // add notify bubble to user navigation
 				}
+$html = '<div id="osnbox">
+							<a class="osn-new-events-link" title="'.$tooltip.'"><span class="notifybub ntfy-event-'. $classSuffix.'">'.$eventcount.'</span></a>
+						</div>';
+				
+				// add to user panel
+				$this->content['loggedin']['suffix'] = @$this->content['loggedin']['suffix']. ' ' . $html;
+
 			}
 			
 			qa_html_theme_base::doctype();

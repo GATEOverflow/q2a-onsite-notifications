@@ -184,6 +184,7 @@ class q2apro_onsitenotifications_page {
 					<div class="nfyContainer">
 					<div id="nfyContainerInbox">
 ';
+						$url = qa_path_absolute("");
 
 				// BIG FOREACH
 				foreach($events as $postid_string => $event) {
@@ -230,7 +231,7 @@ class q2apro_onsitenotifications_page {
 
 						$qTitle = qa_db_read_one_value( qa_db_query_sub("SELECT title FROM `^blogs` WHERE  `postid` = ".$params['parentid']." LIMIT 1"), true );
 						if(!isset($qTitle)) $qTitle = ''; // (isset($getQtitle[0])) ? $getQtitle[0] : "";
-						$activity_url = qa_path_html("blog/".qa_q_request($params['parentid'], $qTitle), null, $url, null, null);
+						$activity_url = qa_path_absolute("blog")."/".qa_q_request($params['parentid'], $qTitle);
 						$linkTitle = $qTitle;
 						$link = '<a target="_blank" href="'.$activity_url.'">'.$qTitle.'</a>';
 
@@ -258,7 +259,7 @@ class q2apro_onsitenotifications_page {
 						}
 
 						$anchor = qa_anchor((strpos($event['event'],'a_') === 0 || strpos($event['event'],'in_a_') === 0?'A':'C'), $params['postid']);
-						$activity_url = qa_path_html(qa_q_request($parent['postid'], $parent['title']), null, $url,null,$anchor);
+						$activity_url = qa_path_absolute(qa_q_request($parent['postid'], $parent['title']), null, $anchor);
 						$linkTitle = $parent['title'];
 						$link = '<a target="_blank" href="'.$activity_url.'">'.$parent['title'].'</a>';
 						//if($event == 'new_u_mentioned')
@@ -272,7 +273,7 @@ class q2apro_onsitenotifications_page {
 						if($params['title'] !== null) {
 							$qTitle = qa_db_read_one_value( qa_db_query_sub("SELECT title FROM `^posts` WHERE `postid` = ".$params['postid']." LIMIT 1"), true );
 							if(!isset($qTitle)) $qTitle = ''; // (isset($getQtitle[0])) ? $getQtitle[0] : "";
-							$activity_url = qa_path_html(qa_q_request($params['postid'], $qTitle), null, $url, null, null);
+							$activity_url = qa_path_absolute(qa_q_request($params['postid'], $qTitle),  null, null);
 							$linkTitle = $qTitle;
 							$link = '<a target="_blank" href="'.$activity_url.'">'.$qTitle.'</a>';
 						}
@@ -290,30 +291,38 @@ class q2apro_onsitenotifications_page {
 					if($type=='in_c_question' || $type=='in_c_answer' || $type=='in_c_comment' || $type=='in_blog_comment'  || $type=='in_blog_c_comment'  ) { // added in_c_comment
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_comment');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'comment-icon.png" />';
+						//$itemIcon = '<div class="nicon ncomment"></div>';
 					}
 					else if($type=='in_q_vote_up' || $type=='in_a_vote_up') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_upvote');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'vote-up-mini.png" />';
+					//	$itemIcon = '<div class="nicon nvoteup"></div>';
 					}
 					else if($type=='in_q_vote_down' || $type=='in_a_vote_down') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_downvote');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'vote-down-mini.png" />';
+					//	$itemIcon = '<div class="nicon nvotedown"></div>';
 					}
 					else if($type=='in_c_vote_up') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_commentupvote');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'vote-up-mini.png" />';
+					//	$itemIcon = '<div class="nicon nvoteup"></div>';
 					}
 					else if($type=='in_c_vote_down') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_commentdownvote');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'vote-down-mini.png" />';
+					//	$itemIcon = '<div class="nicon nvotedown"></div>';
 					}
 					else if($type=='in_a_question') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_answer');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'answer-icon.png" />';
+					  //      $itemIcon = '<div class="nicon nanswer"></div>';
+
 					}
 					else if($type=='in_a_select') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_bestanswer');
 						$itemIcon = '<img src="'.$url.$this->urltoroot.'best_answer_mini.png" />';
+					//	$itemIcon = '<div class="nicon nbestanswer"></div>';
 					}
 					else if($type=='in_q_edit') {
 						$eventName = qa_lang('q2apro_onsitenotifications_lang/in_edit');
@@ -343,7 +352,7 @@ class q2apro_onsitenotifications_page {
 						$sender = $event['handle'];
 						#$message = $params['message'];
 						$qTitle = $event['handle'];
-						$activity_url = qa_path_absolute('').'message/'.$event['handle'];
+						$activity_url = qa_path_absolute('message').'/'.$event['handle'];
 						$linkTitle = $qTitle;
 						$link = '<a target="_blank" href="'.$activity_url.'">'.$qTitle.'</a>';
 
@@ -359,7 +368,7 @@ class q2apro_onsitenotifications_page {
 						$sender = $params['sender'];
 						//$message = $params['message'];
 						$qTitle = $params['sender_handle'];
-						$activity_url = qa_path_absolute('').'user/'.$params['handle'].'/wall';
+						$activity_url = qa_path_absolute('user').'/'.$params['handle'].'/wall';
 						$linkTitle = $qTitle;
 						$link = '<a target="_blank" href="'.$activity_url.'">'.$qTitle.'</a>';
 

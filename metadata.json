@@ -1,0 +1,14 @@
+{
+  "name": "On-Site-Notification",
+  "uri": "https://GATE Overflow/plugins/on-site-notifications",
+  "description": "Facebook-like / Stackoverflow-like notifications on your question2answer forum that can replace all email-notifications",
+  "version": "1.1",
+  "date": "2022-08-15",
+  "author": "q2apro.com",
+  "author_uri": "http://www.q2apro.com",
+  "license": "GPLv2",
+  "update_uri": "https://raw.githubusercontent.com/GATE Overflow/q2a-on-site-notifications/master/metadata.json",
+  "min_q2a": "1.5",
+  "min_php": "5.1.6",
+  "load_order": "after_db_init"
+}
